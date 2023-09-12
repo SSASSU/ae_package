@@ -1,0 +1,3 @@
+path_config:
+  harbor_base: ./harbor_values
+
