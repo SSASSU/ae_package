@@ -1,5 +1,8 @@
 # Python pyc files
 *.pyc
-
+*.key
+*.csr
+*.crt
+secret.yaml
 # Python __pycache__ directory
 __pycache__/
