@@ -1,8 +1,12 @@
 # Python pyc files
 *.pyc
-*.key
-*.csr
-*.crt
+ca.key
+ca.csr
+ca.srl
+ca.crt
+vision.harbor.core.crt
+vision.harbor.core.csr
+vision.harbor.core.key
 secret.yaml
 # Python __pycache__ directory
 __pycache__/
