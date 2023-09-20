@@ -19,13 +19,12 @@ if __name__ == "__main__":
     env.config()
    
     # harbor cert. config 
-    #certification.config(harbor_base_path)
+    certification.config(harbor_base_path)
 
     # harbor helm install 
     harbor_install.create_namespace()
     harbor_install.apply_secret(harbor_base_path)
-    #3. helm chart install 
-
+    harbor_install.helm_install(harbor_base_path)
 
     # k8s <-> running check 
 

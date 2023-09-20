@@ -1,4 +1,5 @@
 from kubernetes import client, config
+import subprocess
 import os
 
 def create_namespace():
@@ -15,9 +16,9 @@ def create_namespace():
     try:
         # Namespace 생성
         v1.create_namespace(namespace)
-        print(f"Namespace 생성되었습니다.")
+        print(f"Namespace Created")
     except Exception as e:
-        print(f"Namespace 생성 중 오류 발생: {str(e)}")
+        print(f"Namespace Create Error: {str(e)}")
 
 def apply_secret(harbor_path: str):
     # Kubernetes 클러스터 설정 로드
@@ -31,7 +32,7 @@ def apply_secret(harbor_path: str):
     secret_file = harbor_path+"/secret.yaml"    # 적용할 Secret 이름으로 변경
 
     # Secret 적용 명령어 생성
-    command = [
+    secret_apply_cmd = [
         "kubectl",
         "apply",
         "-f",
@@ -42,7 +43,27 @@ def apply_secret(harbor_path: str):
 
     try:
         # kubectl 명령 실행
-        os.system(" ".join(command))
-        print(f"Secret'이(가) '{namespace}' 네임스페이스에 적용되었습니다.")
+        os.system(" ".join(secret_apply_cmd))
+        print(f"Secret Applied at harbor namespace")
     except Exception as e:
-        print(f"Secret 적용 중 오류 발생: {str(e)}")
+        print(f"Secret Apply Error: {str(e)}")
+
+def helm_install(harbor_path: str):
+    try:
+        # Helm 차트 설치 명령 실행
+        repo_add_cmd = "helm repo add harbor https://helm.goharbor.io"
+        helm_install_cmd = [
+            "helm",
+            "install",
+            "harbor",
+            "harbor/harbor",
+            "-n",
+            "harbor",
+            "-f",
+            harbor_path+"/values.yaml"
+        ]
+        subprocess.run(repo_add_cmd, shell=True, check=True)
+        subprocess.run(helm_install_cmd, check=True)
+        print(f"Helm Installed")
+    except subprocess.CalledProcessError as e:
+        print(f"Helm Install Error: {str(e)}")
