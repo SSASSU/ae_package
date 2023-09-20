@@ -1,35 +1,37 @@
 from kubernetes import client, config
+from kubernetes.client.rest import ApiException
+
 import subprocess
 import os
+import curses
+import time
 
 def create_namespace():
-    # Kubernetes 클러스터 설정 로드
-    config.load_kube_config()  # 또는 config.load_incluster_config()를 사용하여 인클러스터 구성 로드
 
-    # Kubernetes API 클라이언트 생성
+    config.load_kube_config()  
+
+    # Create K8s Client
     v1 = client.CoreV1Api()
 
-    # Namespace 오브젝트 생성
+    # Create Namespace Object
     namespace = client.V1Namespace()
     namespace.metadata = client.V1ObjectMeta(name="harbor")
 
     try:
-        # Namespace 생성
+        # Create Namespace 
         v1.create_namespace(namespace)
         print(f"Namespace Created")
     except Exception as e:
         print(f"Namespace Create Error: {str(e)}")
 
 def apply_secret(harbor_path: str):
-    # Kubernetes 클러스터 설정 로드
-    config.load_kube_config()  # 또는 config.load_incluster_config()를 사용하여 인클러스터 구성 로드
 
-    # Kubernetes API 클라이언트 생성
+    config.load_kube_config()
+
     api_instance = client.CustomObjectsApi()
 
-    # Secret을 적용할 namespace 및 파일 경로 설정
-    namespace = "harbor"  # 적용할 namespace 이름으로 변경
-    secret_file = harbor_path+"/secret.yaml"    # 적용할 Secret 이름으로 변경
+    namespace = "harbor"
+    secret_file = harbor_path+"/secret.yaml"
 
     # Secret 적용 명령어 생성
     secret_apply_cmd = [
@@ -42,7 +44,7 @@ def apply_secret(harbor_path: str):
     ]
 
     try:
-        # kubectl 명령 실행
+        # Excute kubectl command 
         os.system(" ".join(secret_apply_cmd))
         print(f"Secret Applied at harbor namespace")
     except Exception as e:
@@ -50,7 +52,7 @@ def apply_secret(harbor_path: str):
 
 def helm_install(harbor_path: str):
     try:
-        # Helm 차트 설치 명령 실행
+        # Build Helm install Command
         repo_add_cmd = "helm repo add harbor https://helm.goharbor.io"
         helm_install_cmd = [
             "helm",
@@ -67,3 +69,50 @@ def helm_install(harbor_path: str):
         print(f"Helm Installed")
     except subprocess.CalledProcessError as e:
         print(f"Helm Install Error: {str(e)}")
+
+def running_check(stdscr, namespace, timeout_seconds=300):
+
+    config.load_kube_config()  
+
+    v1 = client.CoreV1Api()
+
+    start_time = time.time()
+    end_time = start_time + timeout_seconds
+
+    while True:
+        stdscr.clear()
+        stdscr.addstr(0, 0, f"Namespace: {namespace}")
+        stdscr.addstr(1, 0, "Pods:")
+
+        if time.time() > end_time:
+            stdscr.addstr(2, 0, f"The pods did not transition to the Running state for {timeout_seconds} seconds.")
+            break
+
+        try:
+            pods = v1.list_namespaced_pod(namespace)
+        except ApiException as e:
+            stdscr.addstr(2, 0, f"An error occurred while fetching the list of pods: {e}")
+            break
+
+        row = 3
+        all_running = True
+
+        for pod in pods.items:
+            if pod.status.phase != "Running":
+                all_running = False
+                stdscr.addstr(row, 2, f"- {pod.metadata.name}, Phase: {pod.status.phase}\n")
+            else:
+                stdscr.addstr(row, 2, f"- {pod.metadata.name}, Phase: {pod.status.phase}\n")
+            row += 1
+
+        if all_running:
+            stdscr.addstr(row, 0, f"\nAll pods are in Running state. Continuing in 5 seconds.")
+            stdscr.refresh()
+            time.sleep(5)
+            break
+
+        elapsed_time = int(time.time() - start_time)
+        stdscr.addstr(row + 1, 0, f"Elapsed time: {elapsed_time} seconds")
+
+        stdscr.refresh()
+        time.sleep(1)  # loop restart every 1sec
