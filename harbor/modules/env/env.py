@@ -4,7 +4,7 @@ import os
 
 from kubernetes import client, config
 
-def get_k8s_node_ip(node_ips: list):
+def get_k8s_node_ip(node_ips: list, master_ips: list):
 
     config.load_kube_config()
 
@@ -14,10 +14,16 @@ def get_k8s_node_ip(node_ips: list):
 
     #Get Internal Node IP
     for node in node_info_list:
+ 
+        node_labels = node.metadata.labels
         addresses = node.status.addresses
+
         for addr in addresses:
             if addr.type == "InternalIP":
                 node_ips.append(addr.address)
+                #Get Master Node
+                if "node-role.kubernetes.io/master" in node_labels:
+                    master_ips.append(addr.address)
 
 def ssl_config():
 
@@ -49,15 +55,14 @@ def ssh_key_generator():
         print(f"RSA key Generation Error: {e}")
 
 
-def ssh_key_copy(node_ips: list):
+def ssh_key_copy(node_ips: list, host_info: dict):
 
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
-    # SSH 연결 및 키 복사
     try:
         for node_ip in node_ips:
-            ssh_client.connect(node_ip, username="root", password="ntels1234")
+            ssh_client.connect(node_ip, username=host_info["account"]["id"], password=host_info["account"]["pass"])
             ssh_key_path = os.path.expanduser("~/.ssh/id_rsa.pub")
             ssh_key = open(ssh_key_path).read()
             ssh_client.exec_command(f"echo '{ssh_key}' > ~/.ssh/authorized_keys")
@@ -66,3 +71,36 @@ def ssh_key_copy(node_ips: list):
 
     except Exception as e:
         print(f"{node_ip} : SSH Key Copy Error: {str(e)}")
+
+
+def harbor_add_host(master_ips: list, node_ips: list, host_info: dict):
+
+    ssh_client = paramiko.SSHClient()
+    ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+    harbor_host ="%s\tvision.harbor.core" %master_ips[0]
+    harbor_host =harbor_host.encode('utf-8')
+
+    print(type(harbor_host))
+    print(harbor_host)
+
+    try:
+        for node_ip in node_ips:
+            ssh_client.connect(node_ip, username=host_info["account"]["id"], password=host_info["account"]["pass"])
+
+            with ssh_client.open_sftp().file("/etc/hosts", "r") as hosts_file:
+                current_contents = hosts_file.read()
+
+                if harbor_host in current_contents:
+                    print(f"{node_ip}: {harbor_host} exist in /etc/hosts")
+
+                else:
+                    with ssh_client.open_sftp().file("/etc/hosts", "a") as hosts_file:
+                        hosts_file.write("\n%s" %harbor_host.decode('utf-8'))
+                        print(f"{node_ip}: /etc/hosts {harbor_host} added")
+
+    except Exception as e:
+        print(f"{node_ip} : /etc/hosts Configuration Error: {str(e)}")
+
+# SSH 연결 종료
+    ssh_client.close()

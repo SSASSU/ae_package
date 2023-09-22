@@ -9,10 +9,15 @@ from modules.harbor_install import harbor_install
 with open("./config/config.yaml", "r") as config_file:
     config_data = yaml.load(config_file, Loader=yaml.FullLoader)
 
-#config 
+with open("./config/secret_config.yaml", "r") as config_file:
+    host_info = yaml.load(config_file, Loader=yaml.FullLoader)
 
+#Global 
+
+master_ips = []
 node_ips = []
 harbor_base_path = config_data["path_config"]["harbor_base"]
+
 
 def running_check(stdscr):
     curses.curs_set(0) #cursor hide
@@ -22,24 +27,28 @@ def running_check(stdscr):
 
 if __name__ == "__main__":
 
-    # harbor env config
+    # SSL config(ARM openssl lib issue)
     env.ssl_config()
 
     # Get Node Ip #List 
-    env.get_k8s_node_ip(node_ips)
+    env.get_k8s_node_ip(node_ips, master_ips)
 
     # ssh key copy
     env.ssh_key_generator()
-    env.ssh_key_copy(node_ips)
+    env.ssh_key_copy(node_ips, host_info)
 
-    # harbor cert. config 
+    # Harbor Host Config
+    env.harbor_add_host(master_ips, node_ips, host_info)
+    exit(1)
+
+    # Harbor Cert. Config 
     certification.config(harbor_base_path)
 
-    # harbor helm install 
+    # Harbor Helm Install 
     harbor_install.create_namespace()
     harbor_install.apply_secret(harbor_base_path)
     harbor_install.helm_install(harbor_base_path)
 
-    # k8s <-> running check 
+    # Kubernetes <-> Harbor Pods running check 
     curses.wrapper(running_check)
     print("계속 진행")
