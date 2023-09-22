@@ -6,12 +6,12 @@ from modules.env import env
 from modules.certification import certification
 from modules.harbor_install import harbor_install
 
-
 with open("./config/config.yaml", "r") as config_file:
     config_data = yaml.load(config_file, Loader=yaml.FullLoader)
 
 #config 
 
+node_ips = []
 harbor_base_path = config_data["path_config"]["harbor_base"]
 
 def running_check(stdscr):
@@ -23,8 +23,15 @@ def running_check(stdscr):
 if __name__ == "__main__":
 
     # harbor env config
-    env.config()
-   
+    env.ssl_config()
+
+    # Get Node Ip #List 
+    env.get_k8s_node_ip(node_ips)
+
+    # ssh key copy
+    env.ssh_key_generator()
+    env.ssh_key_copy(node_ips)
+
     # harbor cert. config 
     certification.config(harbor_base_path)
 
