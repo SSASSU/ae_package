@@ -10,7 +10,7 @@ with open("./config/config.yaml", "r") as config_file:
     config_data = yaml.load(config_file, Loader=yaml.FullLoader)
 
 with open("./config/secret_config.yaml", "r") as config_file:
-    host_info = yaml.load(config_file, Loader=yaml.FullLoader)
+    user_info = yaml.load(config_file, Loader=yaml.FullLoader)
 
 #Global 
 
@@ -35,11 +35,10 @@ if __name__ == "__main__":
 
     # ssh key copy
     env.ssh_key_generator()
-    env.ssh_key_copy(node_ips, host_info)
+    env.ssh_key_copy(node_ips, user_info)
 
     # Harbor Host Config
-    env.harbor_add_host(master_ips, node_ips, host_info)
-    exit(1)
+    env.harbor_add_host(master_ips, node_ips, user_info)
 
     # Harbor Cert. Config 
     certification.config(harbor_base_path)
@@ -51,4 +50,17 @@ if __name__ == "__main__":
 
     # Kubernetes <-> Harbor Pods running check 
     curses.wrapper(running_check)
-    print("계속 진행")
+    
+    # Harbor Login 
+    harbor_install.harbor_login(node_ips, user_info)     
+
+    # Harbor Init (project create, solution image upload)
+    harbor_init.create_projects()
+
+
+
+
+
+
+
+

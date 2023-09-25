@@ -55,14 +55,14 @@ def ssh_key_generator():
         print(f"RSA key Generation Error: {e}")
 
 
-def ssh_key_copy(node_ips: list, host_info: dict):
+def ssh_key_copy(node_ips: list, user_info: dict):
 
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
     try:
         for node_ip in node_ips:
-            ssh_client.connect(node_ip, username=host_info["account"]["id"], password=host_info["account"]["pass"])
+            ssh_client.connect(node_ip, username=user_info["account"]["id"], password=user_info["account"]["pass"])
             ssh_key_path = os.path.expanduser("~/.ssh/id_rsa.pub")
             ssh_key = open(ssh_key_path).read()
             ssh_client.exec_command(f"echo '{ssh_key}' > ~/.ssh/authorized_keys")
@@ -73,7 +73,7 @@ def ssh_key_copy(node_ips: list, host_info: dict):
         print(f"{node_ip} : SSH Key Copy Error: {str(e)}")
 
 
-def harbor_add_host(master_ips: list, node_ips: list, host_info: dict):
+def harbor_add_host(master_ips: list, node_ips: list, user_info: dict):
 
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -83,7 +83,7 @@ def harbor_add_host(master_ips: list, node_ips: list, host_info: dict):
 
     try:
         for node_ip in node_ips:
-            ssh_client.connect(node_ip, username=host_info["account"]["host_id"], password=host_info["account"]["host_pass"])
+            ssh_client.connect(node_ip, username=user_info["account"]["host_id"], password=user_info["account"]["host_pass"])
 
             with ssh_client.open_sftp().file("/etc/hosts", "r") as hosts_file:
                 current_contents = hosts_file.read()

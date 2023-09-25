@@ -119,17 +119,17 @@ def running_check(stdscr, namespace, timeout_seconds=300):
         time.sleep(1)  # loop restart every 1sec
 
 
-def harbor_login(node_ips: list, host_info: dict):
+def harbor_login(node_ips: list, user_info: dict):
 
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
-    nerdctl_login_cmd = "nerdctl login vision.harbor.core:30101 -u %s -p %s" %(host_info["account"]["harbor_id"], host_info["account"]["harbor_pass"])
+    nerdctl_login_cmd = "nerdctl login vision.harbor.core:30101 -u %s -p %s" %(user_info["account"]["harbor_id"], user_info["account"]["harbor_pass"])
  
     try:
         for node_ip in node_ips:
 
-            ssh_client.connect(node_ip, username=host_info["account"]["host_id"], password=host_info["account"]["host_pass"])
+            ssh_client.connect(node_ip, username=user_info["account"]["host_id"], password=user_info["account"]["host_pass"])
 
             stdin, stdout, stderr = ssh_client.exec_command(nerdctl_login_cmd)
    
