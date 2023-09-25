@@ -5,6 +5,7 @@ import curses
 from modules.env import env
 from modules.certification import certification
 from modules.harbor_install import harbor_install
+from modules.harbor_init import harbor_init
 
 with open("./config/config.yaml", "r") as config_file:
     config_data = yaml.load(config_file, Loader=yaml.FullLoader)
@@ -17,7 +18,7 @@ with open("./config/secret_config.yaml", "r") as config_file:
 master_ips = []
 node_ips = []
 harbor_base_path = config_data["path_config"]["harbor_base"]
-
+project_list = config_data["project_list"]
 
 def running_check(stdscr):
     curses.curs_set(0) #cursor hide
@@ -55,7 +56,7 @@ if __name__ == "__main__":
     harbor_install.harbor_login(node_ips, user_info)     
 
     # Harbor Init (project create, solution image upload)
-    harbor_init.create_projects()
+    harbor_init.create_projects(project_list, user_info)
 
 
 

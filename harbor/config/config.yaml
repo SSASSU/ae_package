@@ -1,3 +1,5 @@
 path_config:
   harbor_base: ./harbor_values
 
+project_list: ["basic_apps", "openjdk", "common_template", "visionai_template"]
+
