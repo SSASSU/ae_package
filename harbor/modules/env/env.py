@@ -78,7 +78,7 @@ def harbor_add_host(master_ips: list, node_ips: list, host_info: dict):
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
-    harbor_host ="%s\tvision.harbor.core" %master_ips[0]
+    harbor_host ="%s\tvision.harbor.core\n" %master_ips[0]
     harbor_host =harbor_host.encode('utf-8')
 
     print(type(harbor_host))
@@ -86,7 +86,7 @@ def harbor_add_host(master_ips: list, node_ips: list, host_info: dict):
 
     try:
         for node_ip in node_ips:
-            ssh_client.connect(node_ip, username=host_info["account"]["id"], password=host_info["account"]["pass"])
+            ssh_client.connect(node_ip, username=host_info["account"]["host_id"], password=host_info["account"]["host_pass"])
 
             with ssh_client.open_sftp().file("/etc/hosts", "r") as hosts_file:
                 current_contents = hosts_file.read()
@@ -98,9 +98,9 @@ def harbor_add_host(master_ips: list, node_ips: list, host_info: dict):
                     with ssh_client.open_sftp().file("/etc/hosts", "a") as hosts_file:
                         hosts_file.write("\n%s" %harbor_host.decode('utf-8'))
                         print(f"{node_ip}: /etc/hosts {harbor_host} added")
+    
+            ssh_client.close()
 
     except Exception as e:
         print(f"{node_ip} : /etc/hosts Configuration Error: {str(e)}")
 
-# SSH 연결 종료
-    ssh_client.close()
