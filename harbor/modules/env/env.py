@@ -81,9 +81,6 @@ def harbor_add_host(master_ips: list, node_ips: list, host_info: dict):
     harbor_host ="%s\tvision.harbor.core\n" %master_ips[0]
     harbor_host =harbor_host.encode('utf-8')
 
-    print(type(harbor_host))
-    print(harbor_host)
-
     try:
         for node_ip in node_ips:
             ssh_client.connect(node_ip, username=host_info["account"]["host_id"], password=host_info["account"]["host_pass"])
