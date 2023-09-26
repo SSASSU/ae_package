@@ -1,5 +1,6 @@
 path_config:
   harbor_base: ./harbor_values
+  image_path: ./images 
 
-project_list: ["basic_apps", "openjdk", "common_template", "visionai_template"]
+project_list: ["basic-apps", "openjdk", "common_template", "visionai_template"]
 

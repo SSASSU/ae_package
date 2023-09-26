@@ -17,7 +17,9 @@ with open("./config/secret_config.yaml", "r") as config_file:
 
 master_ips = []
 node_ips = []
+
 harbor_base_path = config_data["path_config"]["harbor_base"]
+harbor_image_path = config_data["path_config"]["image_path"]
 project_list = config_data["project_list"]
 
 def running_check(stdscr):
@@ -55,10 +57,9 @@ if __name__ == "__main__":
     # Harbor Login 
     harbor_install.harbor_login(node_ips, user_info)     
 
-    # Harbor Init (project create, solution image upload)
+    # Harbor Init (project create, image upload)
     harbor_init.create_projects(project_list, user_info)
-
-
+    harbor_init.upload_images(harbor_image_path)
 
 
 
