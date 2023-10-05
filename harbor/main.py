@@ -5,6 +5,7 @@ import curses
 from collections import OrderedDict
 from typing import Dict
 from modules.env import env
+from modules.pod_checker import pod_checker
 from modules.certification import certification
 from modules.harbor_install import harbor_install
 from modules.harbor_init import harbor_init
@@ -28,7 +29,7 @@ def running_check(stdscr, namespace: str):
     curses.curs_set(0) 
     namespace_to_check = namespace
     timeout_seconds = 500
-    harbor_install.running_check(stdscr, namespace_to_check, timeout_seconds)
+    pod_checker.running_check(stdscr, namespace_to_check, timeout_seconds)
 
 if __name__ == "__main__":
 
@@ -47,8 +48,6 @@ if __name__ == "__main__":
     certification.config(harbor_base_path)
 
     # Harbor Helm Install 
-    harbor_install.create_namespace()
-    harbor_install.apply_secret(harbor_base_path)
     harbor_install.helm_install(harbor_base_path)
 
     # Kubernetes <-> Harbor Pods running check 
@@ -61,9 +60,10 @@ if __name__ == "__main__":
     harbor_init.create_projects(project_list, user_info)
     harbor_init.upload_images(harbor_image_path)
 
-    # ae설치를 위한 각 node label 수정
+    # Modify node metadata/annotation 
     ae_install.update_node_label(k8s_nodes)
-
-
+    
+    # Install Viewapps Helm chart
+    
 
 
