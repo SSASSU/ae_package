@@ -20,13 +20,12 @@ def get_k8s_node_info(k8s_nodes: dict):
 
         for addr in addresses:
             if addr.type == "InternalIP":
-                node_ips.append(addr.address)
                 ip = addr.address
+
             if addr.type == "Hostname":
                 host_name = addr.address
 
         if "node-role.kubernetes.io/master" in node_labels:
-            master_ips.append(addr.address)
             k8s_nodes[ip] = (host_name, "master")
         else:
             k8s_nodes[ip] = (host_name, "worker")       

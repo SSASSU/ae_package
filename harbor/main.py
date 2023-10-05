@@ -8,6 +8,7 @@ from modules.env import env
 from modules.certification import certification
 from modules.harbor_install import harbor_install
 from modules.harbor_init import harbor_init
+from modules.ae_install import ae_install
 
 with open("./config/config.yaml", "r") as config_file:
     config_data = yaml.load(config_file, Loader=yaml.FullLoader)
@@ -60,7 +61,8 @@ if __name__ == "__main__":
     harbor_init.create_projects(project_list, user_info)
     harbor_init.upload_images(harbor_image_path)
 
-
+    # ae설치를 위한 각 node label 수정
+    ae_install.update_node_label(k8s_nodes)
 
 
 
