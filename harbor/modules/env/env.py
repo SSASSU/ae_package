@@ -4,26 +4,32 @@ import os
 
 from kubernetes import client, config
 
-def get_k8s_node_ip(node_ips: list, master_ips: list):
+def get_k8s_node_info(k8s_nodes: dict):
 
     config.load_kube_config()
 
-    #Get Node Info.
     v1 = client.CoreV1Api()
     node_info_list = v1.list_node().items
 
-    #Get Internal Node IP
     for node in node_info_list:
  
         node_labels = node.metadata.labels
         addresses = node.status.addresses
+        host_name = ""
+        ip = ""
 
         for addr in addresses:
             if addr.type == "InternalIP":
                 node_ips.append(addr.address)
-                #Get Master Node
-                if "node-role.kubernetes.io/master" in node_labels:
-                    master_ips.append(addr.address)
+                ip = addr.address
+            if addr.type == "Hostname":
+                host_name = addr.address
+
+        if "node-role.kubernetes.io/master" in node_labels:
+            master_ips.append(addr.address)
+            k8s_nodes[ip] = (host_name, "master")
+        else:
+            k8s_nodes[ip] = (host_name, "worker")       
 
 def ssl_config():
 
@@ -55,13 +61,13 @@ def ssh_key_generator():
         print(f"RSA key Generation Error: {e}")
 
 
-def ssh_key_copy(node_ips: list, user_info: dict):
+def ssh_key_copy(k8s_nodes: dict, user_info: dict):
 
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
     try:
-        for node_ip in node_ips:
+        for node_ip in k8s_nodes:
             ssh_client.connect(node_ip, username=user_info["account"]["id"], password=user_info["account"]["pass"])
             ssh_key_path = os.path.expanduser("~/.ssh/id_rsa.pub")
             ssh_key = open(ssh_key_path).read()
@@ -73,16 +79,17 @@ def ssh_key_copy(node_ips: list, user_info: dict):
         print(f"{node_ip} : SSH Key Copy Error: {str(e)}")
 
 
-def harbor_add_host(master_ips: list, node_ips: list, user_info: dict):
+def harbor_add_host(k8s_nodes: dict, user_info: dict):
 
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
-    harbor_host ="%s\tvision.harbor.core\n" %master_ips[0]
+    
+    harbor_host ="%s\tvision.harbor.core\n" %list(k8s_nodes.keys())[0]
     harbor_host =harbor_host.encode('utf-8')
 
     try:
-        for node_ip in node_ips:
+        for node_ip in k8s_nodes:
             ssh_client.connect(node_ip, username=user_info["account"]["host_id"], password=user_info["account"]["host_pass"])
 
             with ssh_client.open_sftp().file("/etc/hosts", "r") as hosts_file:

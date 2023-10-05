@@ -119,7 +119,7 @@ def running_check(stdscr, namespace, timeout_seconds=300):
         time.sleep(1)  # loop restart every 1sec
 
 
-def harbor_login(node_ips: list, user_info: dict):
+def harbor_login(k8s_nodes: dict, user_info: dict):
 
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -127,7 +127,7 @@ def harbor_login(node_ips: list, user_info: dict):
     nerdctl_login_cmd = "nerdctl login vision.harbor.core:30101 -u %s -p %s" %(user_info["account"]["harbor_id"], user_info["account"]["harbor_pass"])
  
     try:
-        for node_ip in node_ips:
+        for node_ip in k8s_nodes:
 
             ssh_client.connect(node_ip, username=user_info["account"]["host_id"], password=user_info["account"]["host_pass"])
 
