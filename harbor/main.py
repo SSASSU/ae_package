@@ -23,10 +23,10 @@ harbor_base_path = config_data["path_config"]["harbor_base"]
 harbor_image_path = config_data["path_config"]["image_path"]
 project_list = config_data["project_list"]
 
-def running_check(stdscr):
+def running_check(stdscr, namespace: str):
 
     curses.curs_set(0) 
-    namespace_to_check = "harbor"
+    namespace_to_check = namespace
     timeout_seconds = 500
     harbor_install.running_check(stdscr, namespace_to_check, timeout_seconds)
 
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     harbor_install.helm_install(harbor_base_path)
 
     # Kubernetes <-> Harbor Pods running check 
-    curses.wrapper(running_check)
+    curses.wrapper(running_check, "harbor")
     
     # Harbor Login 
     harbor_install.harbor_login(k8s_nodes, user_info)     
