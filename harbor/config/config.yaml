@@ -1,5 +1,6 @@
 path_config:
   harbor_base: ./harbor_values
+  viewapps: ./helm_chart/vsai-view-app
   image_path: ./images 
 
 project_list: ["basic-apps", "openjdk", "common_template", "visionai_template"]
