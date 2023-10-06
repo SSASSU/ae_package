@@ -1,20 +1,19 @@
 import os
+import subprocess
+
 from kubernetes import client, config
 
 #view apps, basic apps labeling
 def update_node_label(k8s_nodes: dict):
 
-    # Kubernetes 설정 로드
     config.load_kube_config()
 
-    # Kubernetes API 클라이언트 생성
     v1 = client.CoreV1Api()
 
-    # 추가할 레이블 및 값 정의
     master_node_name = ""
 
     label={} 
-    label["ProcessType"]="viewapps"
+    label["processType"]="viewapps"
 
     for node_ip in k8s_nodes:
         if "master" == k8s_nodes[node_ip][1]:
@@ -43,3 +42,42 @@ def update_node_label(k8s_nodes: dict):
 
     except Exception as e:
         print(f"{master_node_name}: Patch Failed: {str(e)}")
+
+def create_namespace():
+
+    config.load_kube_config()
+
+    # Create K8s Client
+    v1 = client.CoreV1Api()
+
+    # Create Namespace Object
+    namespace = client.V1Namespace()
+    namespace.metadata = client.V1ObjectMeta(name="viewapps")
+
+    try:
+        # Create Namespace
+        v1.create_namespace(namespace)
+        print(f"Namespace Created")
+    except Exception as e:
+        print(f"Namespace Create Error: {str(e)}")
+
+def viewapps_helm_install(viewapps_path: str):
+
+    create_namespace()
+
+    try:
+        # Build Helm install Command
+        helm_install_cmd = [
+            "helm",
+            "install",
+            "viewapps",
+            viewapps_path,
+            "-n",
+            "viewapps"
+        ]
+
+        subprocess.run(helm_install_cmd, check=True)
+        print(f"Helm Installed")
+    except subprocess.CalledProcessError as e:
+        print(f"Helm Install Error: {str(e)}")
+
