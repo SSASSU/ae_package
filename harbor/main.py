@@ -20,8 +20,10 @@ with open("./config/secret_config.yaml", "r") as config_file:
 #Global 
 k8s_nodes: Dict[str, tuple] =  OrderedDict()#{ ip, (node name, role) }
 
+default_config = "./config"
 harbor_base_path = config_data["path_config"]["harbor_base"]
 harbor_image_path = config_data["path_config"]["image_path"]
+viewapps_path = config_data["path_config"]["viewapps"] 
 project_list = config_data["project_list"]
 
 def running_check(stdscr, namespace: str):
@@ -47,10 +49,8 @@ if __name__ == "__main__":
     # Harbor Cert. Config 
     certification.config(harbor_base_path)
 
-    # Harbor Helm Install 
+    # Harbor Helm Install & running check
     harbor_install.helm_install(harbor_base_path)
-
-    # Kubernetes <-> Harbor Pods running check 
     curses.wrapper(running_check, "harbor")
     
     # Harbor Login 
@@ -63,7 +63,11 @@ if __name__ == "__main__":
     # Modify node metadata/annotation 
     ae_install.update_node_label(k8s_nodes)
     
-    # Install Viewapps Helm chart
+    # Viewapps Helm Install & running check 
+    ae_install.viewapps_helm_install(viewapps_path)
+    curses.wrapper(running_check, "viewapps")
+    ae_install.kube_config_copy()
+
+    # Viewapps DB init 
+    ae_install.viewapps_db_init(default_config, user_info)
     
-
-
