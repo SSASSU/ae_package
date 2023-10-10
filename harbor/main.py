@@ -20,7 +20,7 @@ with open("./config/secret_config.yaml", "r") as config_file:
 #Global 
 k8s_nodes: Dict[str, tuple] =  OrderedDict()#{ ip, (node name, role) }
 
-default_config = "./config"
+config_path = "./config"
 harbor_base_path = config_data["path_config"]["harbor_base"]
 harbor_image_path = config_data["path_config"]["image_path"]
 viewapps_path = config_data["path_config"]["viewapps"] 
@@ -69,5 +69,5 @@ if __name__ == "__main__":
     ae_install.kube_config_copy()
 
     # Viewapps DB init 
-    ae_install.viewapps_db_init(default_config, user_info)
+    ae_install.viewapps_db_init(config_path, user_info)
     

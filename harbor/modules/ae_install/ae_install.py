@@ -82,7 +82,7 @@ def viewapps_helm_install(viewapps_path: str):
     except subprocess.CalledProcessError as e:
         print(f"Helm Install Error: {str(e)}")
 
-def viewapps_db_init(viewapps_db_path: str, user_info: dict):
+def viewapps_db_init(config_path: str, user_info: dict):
 
     #DB port forward 
     db_port_forword()
@@ -111,7 +111,7 @@ def viewapps_db_init(viewapps_db_path: str, user_info: dict):
         cursor = conn.cursor()
 
         #CP DB Create
-        cp_create_query = "create database if not exist `cp`"
+        cp_create_query = "create database if not exists `cp`"
         cursor.execute(cp_create_query)
         print(f"query executed: {cp_create_query}")
 
@@ -122,7 +122,7 @@ def viewapps_db_init(viewapps_db_path: str, user_info: dict):
 
         grant_query = "grant all privileges on cp.* to aiworkflowuser"
         cursor.execute(grant_query)
-        print(f"query executed: {use_mysql_db_query}")
+        print(f"query executed: {grant_query}")
 
         flush_query = "flush privileges"
         cursor.execute(flush_query)
@@ -130,6 +130,9 @@ def viewapps_db_init(viewapps_db_path: str, user_info: dict):
 
     except mysql.connector.Error as e:
         print(f"Error: {e}")
+
+    #DB Schema Import
+    db_schema_import(config_path, viewapps_db_ip, user_info["account"]["viewapps_db_pass"])
 
 def db_port_forword():
 
@@ -167,4 +170,16 @@ def kube_config_copy():
     except:
         print(f"kubectl cp Error: {e}")
 
-    exit(1)
+def db_schema_import(config_path: str, db_ip: str, db_pass: str):
+
+    mec_vision_ai_cmd = f"mysql -h {db_ip} -u root -p{db_pass} aiworkflow < {config_path}/mec_vision_ai.sql"
+    mec_core_cmd = f"mysql -h {db_ip} -u root -p{db_pass} cp < {config_path}/mec_core.sql"
+   
+    try:
+        subprocess.Popen(mec_vision_ai_cmd, shell=True)
+        print(f"mec_vision_ai.sql import: {mec_vision_ai_cmd}")
+        subprocess.Popen(mec_core_cmd, shell=True)
+        print(f"mec_core.sql import: {mec_core_cmd}")
+        exit(1)
+    except Exception as e:
+        print(f"sql Import Error: {e}")

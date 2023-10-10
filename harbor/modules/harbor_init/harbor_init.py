@@ -36,7 +36,7 @@ def create_projects(project_list: list, user_info: dict):
 def upload_images(image_path: str):
 
     #Get File List 
-    file_list: list
+    file_list: list=[]
 
     for root, dirs, files in os.walk(image_path):
         for filename in files:
@@ -57,7 +57,7 @@ def upload_images(image_path: str):
     output = subprocess.check_output(images_cmd, shell=True, universal_newlines=True)
 
     lines = output.strip().split('\n')
-    image_list: list
+    image_list: list=[]
 
     for line in lines:
         columns = line.split()

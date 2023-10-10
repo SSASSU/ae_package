@@ -45,7 +45,7 @@ def ssl_config():
 def ssh_key_generator():
 
     key_file = "/root/.ssh/id_rsa"
-    key_comment: str
+    key_comment = ""
     
     try:
         #Old Key file Remove
