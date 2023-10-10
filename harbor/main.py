@@ -9,7 +9,7 @@ from modules.pod_checker import pod_checker
 from modules.certification import certification
 from modules.harbor_install import harbor_install
 from modules.harbor_init import harbor_init
-from modules.ae_install import ae_install
+from modules.viewaspps_install import viewapps_install
 
 with open("./config/config.yaml", "r") as config_file:
     config_data = yaml.load(config_file, Loader=yaml.FullLoader)
@@ -61,13 +61,13 @@ if __name__ == "__main__":
     harbor_init.upload_images(harbor_image_path)
 
     # Modify node metadata/annotation 
-    ae_install.update_node_label(k8s_nodes)
+    viewapps_install.update_node_label(k8s_nodes)
     
     # Viewapps Helm Install & running check 
-    ae_install.viewapps_helm_install(viewapps_path)
+    viewapps_install.viewapps_helm_install(viewapps_path)
     curses.wrapper(running_check, "viewapps")
-    ae_install.kube_config_copy()
+    viewapps_install.kube_config_copy()
 
     # Viewapps DB init 
-    ae_install.viewapps_db_init(config_path, user_info)
+    viewapps_install.viewapps_db_init(config_path, user_info)
     
