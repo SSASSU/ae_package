@@ -142,3 +142,29 @@ def db_port_forword():
     except Exception as e:
         print(f"Error: {e}")
 
+def kube_config_copy():
+
+    config.load_kube_config()
+    v1 = client.CoreV1Api()
+
+    workflow_prefix = "vsai-workflow-app"
+
+    pod_list =  v1.list_namespaced_pod(namespace='viewapps')
+    workflow_pod_name: str
+
+    for pod in pod_list.items:
+        if pod.metadata.name.startswith(workflow_prefix):
+            workflow_pod_name = pod.metadata.name
+
+    src_path="/root/.kube/config"
+    dest_path="/app/resources/kube_config"
+    copy_cmd = f"kubectl cp {src_path} viewapps/{workflow_pod_name}:{dest_path}"
+    
+    try:
+        subprocess.run(copy_cmd, shell=True, check=True)
+        print(f"File '{src_path}' copied to '{workflow_pod_name}:{dest_path}' successfully.")
+
+    except:
+        print(f"kubectl cp Error: {e}")
+
+    exit(1)
