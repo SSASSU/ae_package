@@ -10,7 +10,7 @@ def update_node_label(k8s_nodes: dict):
 
     v1 = client.CoreV1Api()
 
-    master_node_name = ""
+    master_node_name: str
 
     label={} 
     label["processType"]="viewapps"
@@ -81,3 +81,17 @@ def viewapps_helm_install(viewapps_path: str):
     except subprocess.CalledProcessError as e:
         print(f"Helm Install Error: {str(e)}")
 
+def viewapps_db_init(viewapps_db_path: str):
+
+    config.load_kube_config()
+    v1 = client.CoreV1Api()
+
+    vsai_db_prefix = "maria-db-vsaiweb"
+
+    pod_list =  v1.list_namespaced_pod(namespace='viewapps')
+    viewapps_db_ip: str
+
+    for pod in pod_list.items:
+        if pod.metadata.name.startswith(vsai_db_prefix):
+            pod_ip = pod.status.pod_ip
+            print(f"Pod Name: {pod.metadata.name}, Pod IP: {pod_ip}")

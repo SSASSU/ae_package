@@ -15,8 +15,8 @@ def get_k8s_node_info(k8s_nodes: dict):
  
         node_labels = node.metadata.labels
         addresses = node.status.addresses
-        host_name = ""
-        ip = ""
+        host_name: str
+        ip: str
 
         for addr in addresses:
             if addr.type == "InternalIP":
@@ -45,7 +45,7 @@ def ssl_config():
 def ssh_key_generator():
 
     key_file = "/root/.ssh/id_rsa"
-    key_comment = ""
+    key_comment: str
     
     try:
         #Old Key file Remove
