@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "vsai-bridge-app.fullname" . }}-service
+  labels:
+    {{- include "vsai-bridge-app.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      name: http
+      nodePort: {{ .Values.service.nodePort }}
+  selector:
+    {{- include "vsai-bridge-app.selectorLabels" . | nindent 4 }}
