@@ -107,3 +107,29 @@ def harbor_add_host(k8s_nodes: dict, user_info: dict):
     except Exception as e:
         print(f"{node_ip} : /etc/hosts Configuration Error: {str(e)}")
 
+def insecure_regi_config(k8s_nodes: dict, user_info: dict):
+
+    ssh_client = paramiko.SSHClient()
+    ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+    #containerd restart command 
+    containerd_restart_cmd = "service containerd restart"
+
+    try:
+        for node_ip in k8s_nodes:
+            ssh_client.connect(node_ip, username=user_info["account"]["host_id"], password=user_info["account"]["host_pass"])
+
+            sftp = ssh_client.open_sftp()
+            sftp.put("./config/containerd_config.toml", "/etc/containerd/config.toml")
+            print (f"{node_ip}: config.toml Copied")
+
+            sftp.close()
+
+            stdin, stdout, stderr = ssh_client.exec_command(containerd_restart_cmd) 
+            print (f"{node_ip}: Containerd service restart: {containerd_restart_cmd}")
+
+            ssh_client.close()
+
+    except Exception as e:
+        print(f"{node_ip} : Containerd Insecure Registry Config Error: {str(e)}")
+
