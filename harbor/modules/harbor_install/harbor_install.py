@@ -95,5 +95,3 @@ def harbor_login(k8s_nodes: dict, user_info: dict):
 
     except Exception as e:
         print(f"{node_ip} : Harbor Login Error: {str(e)}")
-
-

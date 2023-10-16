@@ -4,7 +4,7 @@ import mysql.connector
 
 from kubernetes import client, config
 
-#view apps, basic apps labeling
+#Viewapps labeling
 def update_node_label(k8s_nodes: dict):
 
     config.load_kube_config()
