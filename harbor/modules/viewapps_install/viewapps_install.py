@@ -174,12 +174,14 @@ def db_schema_import(config_path: str, db_ip: str, db_pass: str):
 
     mec_vision_ai_cmd = f"mysql -h {db_ip} -u root -p{db_pass} aiworkflow < {config_path}/mec_vision_ai.sql"
     mec_core_cmd = f"mysql -h {db_ip} -u root -p{db_pass} cp < {config_path}/mec_core.sql"
+    cp_data_cmd = f"mysql -h {db_ip} -u root -p{db_pass} cp < {config_path}/cp_data.sql"
    
     try:
         subprocess.Popen(mec_vision_ai_cmd, shell=True)
         print(f"mec_vision_ai.sql import: {mec_vision_ai_cmd}")
         subprocess.Popen(mec_core_cmd, shell=True)
         print(f"mec_core.sql import: {mec_core_cmd}")
-        exit(1)
+        subprocess.Popen(mec_core_cmd, shell=True)
+        print(f"cp_data.sql import: {cp_data_cmd}")
     except Exception as e:
         print(f"sql Import Error: {e}")

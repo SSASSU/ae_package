@@ -79,6 +79,8 @@ if __name__ == "__main__":
 
     # Basicapps - Modify node metadata/annotation
     basicapps_install.update_node_label(k8s_nodes)
+    basicapps_install.basicapps_helm_install(basicapps_path)
+    curses.wrapper(running_check, "default")
 
     
 
