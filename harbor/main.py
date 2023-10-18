@@ -73,6 +73,9 @@ if __name__ == "__main__":
     viewapps_install.viewapps_helm_install(viewapps_path)
     curses.wrapper(running_check, "viewapps")
     viewapps_install.kube_config_copy()
+    
+    # harbor webhook config
+    harbor_init.webhook_config(user_info)
 
     # Viewapps DB init 
     viewapps_install.viewapps_db_init(config_path, user_info)
