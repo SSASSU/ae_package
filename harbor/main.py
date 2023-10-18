@@ -78,7 +78,8 @@ if __name__ == "__main__":
     harbor_init.webhook_config(user_info)
 
     # Viewapps DB init 
-    viewapps_install.viewapps_db_init(config_path, user_info)
+    viewapps_install.viewapps_db_init(config_path, user_info, k8s_nodes)
+
 
     # Basicapps - Modify node metadata/annotation
     basicapps_install.update_node_label(k8s_nodes)

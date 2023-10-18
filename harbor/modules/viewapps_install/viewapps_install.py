@@ -82,7 +82,7 @@ def viewapps_helm_install(viewapps_path: str):
     except subprocess.CalledProcessError as e:
         print(f"Helm Install Error: {str(e)}")
 
-def viewapps_db_init(config_path: str, user_info: dict):
+def viewapps_db_init(config_path: str, user_info: dict, k8s_nodes: dict):
 
     #DB port forward 
     db_port_forword()
@@ -90,10 +90,20 @@ def viewapps_db_init(config_path: str, user_info: dict):
     config.load_kube_config()
     v1 = client.CoreV1Api()
 
+    viewapps_db_ip: str
+    master_ip: str
+
     viewapps_db_prefix = "maria-db-vsaiweb"
 
     pod_list =  v1.list_namespaced_pod(namespace='viewapps')
-    viewapps_db_ip: str
+    
+
+    service = v1.read_namespaced_service(name="vsai-workflow-app", namespace="viewapps")
+    cluster_ip = service.spec.cluster_ip
+
+    for node_ip in k8s_nodes:
+        if "master" == k8s_nodes[node_ip][1]:
+            master_ip = node_ip
 
     for pod in pod_list.items:
         if pod.metadata.name.startswith(viewapps_db_prefix):
@@ -105,9 +115,9 @@ def viewapps_db_init(config_path: str, user_info: dict):
         "user": user_info["account"]["viewapps_db_id"],
         "password": user_info["account"]["viewapps_db_pass"]
     }
+    conn = mysql.connector.connect(**db_config)
 
     try:
-        conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor()
 
         #CP DB Create
@@ -128,11 +138,21 @@ def viewapps_db_init(config_path: str, user_info: dict):
         cursor.execute(flush_query)
         print(f"query executed: {flush_query}")
 
+        #DB Schema Import
+        db_schema_import(config_path, viewapps_db_ip, user_info["account"]["viewapps_db_pass"])
+ 
+        #cluster_info_query
+        cluster_info_query = f"insert into aiworkflow.t_vai_cluster_info (cluster_id, cluster_name, bridge_scheme, bridge_host, bridge_port,  config_path, region, provider, current_size, max_size,  min_size, master_nodes, v_cpu, memory, storage,  v_gpu, gpu, kube_version, os, status,  reg_id, reg_dt, mod_id, mod_dt, del_yn,  master_ip, prometheus_url, prometheus_id, prometheus_pw) VALUES('CIL01', 'svc', 'http', '{cluster_ip}', '30490',  '/app/resources/kube_config', 'bundang', 'libvirt', 3, 10,  3, 1, 2, 8, 256,  2, 2, '1.17.0', 'ubuntu1804', 'created',  'vsadmin1', now(), 'vsadmin1', now(), 'N',  '{master_ip}', 'http://223.62.140.9:30477/grafana/d/node_summary/node-exporter-nodes?orgId=1&refresh=30s&token=', NULL, NULL)"
+
+        cursor.execute(cluster_info_query)
+        conn.commit()
+
+        print(f"query executed: {cluster_info_query}"
+
     except mysql.connector.Error as e:
         print(f"Error: {e}")
 
-    #DB Schema Import
-    db_schema_import(config_path, viewapps_db_ip, user_info["account"]["viewapps_db_pass"])
+    conn.close()
 
 def db_port_forword():
 
@@ -181,7 +201,7 @@ def db_schema_import(config_path: str, db_ip: str, db_pass: str):
         print(f"mec_vision_ai.sql import: {mec_vision_ai_cmd}")
         subprocess.Popen(mec_core_cmd, shell=True)
         print(f"mec_core.sql import: {mec_core_cmd}")
-        subprocess.Popen(mec_core_cmd, shell=True)
+        subprocess.Popen(cp_data_cmd, shell=True)
         print(f"cp_data.sql import: {cp_data_cmd}")
     except Exception as e:
         print(f"sql Import Error: {e}")
