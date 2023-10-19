@@ -39,9 +39,9 @@ def running_check(stdscr, namespace, timeout_seconds=300):
             row += 1
 
         if all_running:
-            stdscr.addstr(row, 0, f"\nAll pods are in Running state. Continuing in 5 seconds.")
+            stdscr.addstr(row, 0, f"\nAll pods are in Running state. Continuing in 30 seconds.")
             stdscr.refresh()
-            time.sleep(5)
+            time.sleep(30)
             break
 
         elapsed_time = int(time.time() - start_time)
