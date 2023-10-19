@@ -5,7 +5,7 @@ import curses
 from collections import OrderedDict
 from typing import Dict
 from modules.env import env
-from modules.pod_checker import pod_checker
+from modules.common import common
 from modules.certification import certification
 from modules.harbor_install import harbor_install
 from modules.harbor_init import harbor_init
@@ -34,7 +34,7 @@ def running_check(stdscr, namespace: str):
     curses.curs_set(0) 
     namespace_to_check = namespace
     timeout_seconds = 500
-    pod_checker.running_check(stdscr, namespace_to_check, timeout_seconds)
+    common.running_check(stdscr, namespace_to_check, timeout_seconds)
 
 if __name__ == "__main__":
 
@@ -73,13 +73,13 @@ if __name__ == "__main__":
     viewapps_install.viewapps_helm_install(viewapps_path)
     curses.wrapper(running_check, "viewapps")
     viewapps_install.kube_config_copy()
+    viewapps_install.workflow_add_host(k8s_nodes, user_info)
     
     # harbor webhook config
     harbor_init.webhook_config(user_info)
 
     # Viewapps DB init 
     viewapps_install.viewapps_db_init(config_path, user_info, k8s_nodes)
-
 
     # Basicapps - Modify node metadata/annotation
     basicapps_install.update_node_label(k8s_nodes)

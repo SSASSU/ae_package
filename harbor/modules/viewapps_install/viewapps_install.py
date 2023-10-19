@@ -1,6 +1,7 @@
 import os
 import subprocess
 import mysql.connector
+import paramiko
 
 from kubernetes import client, config
 
@@ -142,12 +143,12 @@ def viewapps_db_init(config_path: str, user_info: dict, k8s_nodes: dict):
         db_schema_import(config_path, viewapps_db_ip, user_info["account"]["viewapps_db_pass"])
  
         #cluster_info_query
-        cluster_info_query = f"insert into aiworkflow.t_vai_cluster_info (cluster_id, cluster_name, bridge_scheme, bridge_host, bridge_port,  config_path, region, provider, current_size, max_size,  min_size, master_nodes, v_cpu, memory, storage,  v_gpu, gpu, kube_version, os, status,  reg_id, reg_dt, mod_id, mod_dt, del_yn,  master_ip, prometheus_url, prometheus_id, prometheus_pw) VALUES('CIL01', 'svc', 'http', '{cluster_ip}', '30490',  '/app/resources/kube_config', 'bundang', 'libvirt', 3, 10,  3, 1, 2, 8, 256,  2, 2, '1.17.0', 'ubuntu1804', 'created',  'vsadmin1', now(), 'vsadmin1', now(), 'N',  '{master_ip}', 'http://223.62.140.9:30477/grafana/d/node_summary/node-exporter-nodes?orgId=1&refresh=30s&token=', NULL, NULL)"
+        cluster_info_query = f"insert into aiworkflow.t_vai_cluster_info (cluster_id, cluster_name, bridge_scheme, bridge_host, bridge_port,  config_path, region, provider, current_size, max_size,  min_size, master_nodes, v_cpu, memory, storage,  v_gpu, gpu, kube_version, os, status,  reg_id, reg_dt, mod_id, mod_dt, del_yn,  master_ip, prometheus_url, prometheus_id, prometheus_pw) VALUES('CIL01', 'svc', 'http', '{cluster_ip}', '8490',  '/app/resources/kube_config', 'bundang', 'libvirt', 3, 10,  3, 1, 2, 8, 256,  2, 2, '1.17.0', 'ubuntu1804', 'created',  'vsadmin1', now(), 'vsadmin1', now(), 'N',  '{master_ip}', 'http://223.62.140.9:30477/grafana/d/node_summary/node-exporter-nodes?orgId=1&refresh=30s&token=', NULL, NULL)"
 
         cursor.execute(cluster_info_query)
         conn.commit()
 
-        print(f"query executed: {cluster_info_query}"
+        print(f"query executed: {cluster_info_query}")
 
     except mysql.connector.Error as e:
         print(f"Error: {e}")
@@ -206,3 +207,38 @@ def db_schema_import(config_path: str, db_ip: str, db_pass: str):
 
     except Exception as e:
         print(f"sql Import Error: {e}")
+
+def workflow_add_host(k8s_nodes: dict, user_info: dict):
+
+    config.load_kube_config()
+    v1 = client.CoreV1Api()
+
+    service = v1.read_namespaced_service(name="vsai-workflow-app", namespace="viewapps")
+    cluster_ip = service.spec.cluster_ip
+
+    ssh_client = paramiko.SSHClient()
+    ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+    workflow_svc ="%s\tvsai-workflow-app.viewapps.svc.cluster.local\n" %cluster_ip
+    workflow_svc =workflow_svc.encode('utf-8')
+
+    try:
+        for node_ip in k8s_nodes:
+            ssh_client.connect(node_ip, username=user_info["account"]["host_id"], password=user_info["account"]["host_pass"])
+
+            with ssh_client.open_sftp().file("/etc/hosts", "r") as hosts_file:
+                current_contents = hosts_file.read()
+
+                if workflow_svc in current_contents:
+                    print(f"{node_ip}: {workflow_svc} exist in /etc/hosts")
+
+                else:
+                    with ssh_client.open_sftp().file("/etc/hosts", "a") as hosts_file:
+                        hosts_file.write("\n%s" %workflow_svc.decode('utf-8'))
+                        print(f"{node_ip}: /etc/hosts {workflow_svc} added")
+
+            ssh_client.close()
+
+    except Exception as e:
+        print(f"{node_ip} : /etc/hosts Configuration Error: {str(e)}")
+
