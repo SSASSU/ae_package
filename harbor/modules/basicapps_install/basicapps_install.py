@@ -18,7 +18,6 @@ def update_node_label(k8s_nodes: dict):
 
     #Set the label of the last worker node to "basicapps"
     last_node_ip=next(reversed(k8s_nodes))
-    print (last_node_ip)
 
     if "master" != k8s_nodes[last_node_ip][1]:
         worker_node_name = k8s_nodes[last_node_ip][0]

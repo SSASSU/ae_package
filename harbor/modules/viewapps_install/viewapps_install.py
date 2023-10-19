@@ -203,5 +203,6 @@ def db_schema_import(config_path: str, db_ip: str, db_pass: str):
         print(f"mec_core.sql import: {mec_core_cmd}")
         subprocess.Popen(cp_data_cmd, shell=True)
         print(f"cp_data.sql import: {cp_data_cmd}")
+
     except Exception as e:
         print(f"sql Import Error: {e}")
