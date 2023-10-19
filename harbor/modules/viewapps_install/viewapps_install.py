@@ -2,6 +2,7 @@ import os
 import subprocess
 import mysql.connector
 import paramiko
+import time
 
 from kubernetes import client, config
 
@@ -199,13 +200,20 @@ def db_schema_import(config_path: str, db_ip: str, db_pass: str):
     ai_data_cmd = f"mysql -h {db_ip} -u root -p{db_pass} aiworkflow < {config_path}/ai_data.sql"
    
     try:
-        subprocess.Popen(mec_vision_ai_cmd, shell=True)
+        process = subprocess.Popen(mec_vision_ai_cmd, shell=True)
+        stdout, stderr = process.communicate()
         print(f"mec_vision_ai.sql import: {mec_vision_ai_cmd}")
-        subprocess.Popen(mec_core_cmd, shell=True)
+
+        process = subprocess.Popen(mec_core_cmd, shell=True)
+        stdout, stderr = process.communicate()
         print(f"mec_core.sql import: {mec_core_cmd}")
-        subprocess.Popen(cp_data_cmd, shell=True)
+
+        process = subprocess.Popen(cp_data_cmd, shell=True)
+        stdout, stderr = process.communicate()
         print(f"cp_data.sql import: {cp_data_cmd}")
-        subprocess.Popen(ai_data_cmd, shell=True)
+
+        process = subprocess.Popen(ai_data_cmd, shell=True)
+        stdout, stderr = process.communicate()
         print(f"ai_data.sql import: {ai_data_cmd}")
 
     except Exception as e:
