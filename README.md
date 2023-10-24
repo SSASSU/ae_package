@@ -6,6 +6,7 @@ This is a project created to make "ae" installation easy.
 
 | item      | version          | note |
 |-----------|--------------|------|
+| ubuntu | 20.04 | |
 | kubernetes  | v1.23.13 |    |
 | containerd| v1.6.6   |   |
 | mysql-client |  8.0 |  |
