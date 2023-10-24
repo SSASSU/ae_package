@@ -40,6 +40,12 @@ This is a project created to make "ae" installation easy.
 # apt install -y mysql-client-8.0
 ```
 
+#### - If your system is x86-based, make the following changes to the Harbor's `values.yaml` file.
+```
+# cd /root/ae_package/harbor/harbor_values
+# mv values_x86.yaml values.yaml
+```
+
 #### - ae_package install 
 ```
 # cd /root/ae_package/harbor
