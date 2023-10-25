@@ -21,6 +21,42 @@ This is a project created to make "ae" installation easy.
 # git clone https://github.com/SSASSU/ae_package.git
 ```
 
+#### - ae_package configuration 
+[Container image file list in ./ae_package/harbor/images]
+
+✅ openjdk.tar
+
+✅ vsai-bridge-app.tar
+
+✅ vsai-message-app.tar
+
+✅ vsai-metric-pusher.tar
+
+✅ vsai-view-app.tar
+
+✅ vsai-workflow-app.tar
+
+[Config File List in ./ae_package/harbor/config]
+
+✅ ai_data.sql
+
+✅ cp_data.sql
+
+✅ mec_core.sql
+
+✅ mec_vision_ai.sql
+
+✅ config.yaml
+
+✅ containerd_config.toml
+
+✅ secret_config.yaml
+
+✅ secret_config.yaml_template
+
+
+You should fill in the appropriate content in the "secret_config.yaml_template" and then rename it to "secret_config.yaml".
+
 #### - helm3 install
 ```
 # cd /root/ae_package/harbor/scripts
