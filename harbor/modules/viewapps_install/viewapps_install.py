@@ -98,10 +98,6 @@ def viewapps_db_init(config_path: str, user_info: dict, k8s_nodes: dict):
     viewapps_db_prefix = "maria-db-vsaiweb"
 
     pod_list =  v1.list_namespaced_pod(namespace='viewapps')
-    
-
-    service = v1.read_namespaced_service(name="vsai-workflow-app", namespace="viewapps")
-    cluster_ip = service.spec.cluster_ip
 
     for node_ip in k8s_nodes:
         if "master" == k8s_nodes[node_ip][1]:
@@ -143,13 +139,7 @@ def viewapps_db_init(config_path: str, user_info: dict, k8s_nodes: dict):
         #DB Schema Import
         db_schema_import(config_path, viewapps_db_ip, user_info["account"]["viewapps_db_pass"])
  
-        #cluster_info_query
-        cluster_info_query = f"insert into aiworkflow.t_vai_cluster_info (cluster_id, cluster_name, bridge_scheme, bridge_host, bridge_port,  config_path, region, provider, current_size, max_size,  min_size, master_nodes, v_cpu, memory, storage,  v_gpu, gpu, kube_version, os, status,  reg_id, reg_dt, mod_id, mod_dt, del_yn,  master_ip, prometheus_url, prometheus_id, prometheus_pw) VALUES('CIL01', 'svc', 'http', '{cluster_ip}', '8490',  '/app/resources/kube_config', 'bundang', 'libvirt', 3, 10,  3, 1, 2, 8, 256,  2, 2, '1.17.0', 'ubuntu1804', 'created',  'vsadmin1', now(), 'vsadmin1', now(), 'N',  '{master_ip}', 'http://223.62.140.9:30477/grafana/d/node_summary/node-exporter-nodes?orgId=1&refresh=30s&token=', NULL, NULL)"
-
-        cursor.execute(cluster_info_query)
         conn.commit()
-
-        print(f"query executed: {cluster_info_query}")
 
     except mysql.connector.Error as e:
         print(f"Error: {e}")

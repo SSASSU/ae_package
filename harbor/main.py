@@ -65,7 +65,7 @@ if __name__ == "__main__":
     # Harbor Init (project create, image upload)
     harbor_init.create_projects(project_list, user_info)
     harbor_init.upload_images(harbor_image_path)
-
+ 
     # Viewapps - Modify node metadata/annotation 
     viewapps_install.update_node_label(k8s_nodes)
     
@@ -85,6 +85,7 @@ if __name__ == "__main__":
     basicapps_install.update_node_label(k8s_nodes)
     basicapps_install.basicapps_helm_install(basicapps_path)
     curses.wrapper(running_check, "default")
+    basicapps_install.basicapps_db_init(config_path, user_info, k8s_nodes)
 
     
 
