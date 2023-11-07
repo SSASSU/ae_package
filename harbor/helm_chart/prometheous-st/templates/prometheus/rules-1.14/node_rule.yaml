@@ -1,0 +1,151 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  annotations:
+    meta.helm.sh/release-name: prometheus
+    meta.helm.sh/release-namespace: prometheus
+    prometheus-operator-validated: "true"
+  labels:
+    app: kube-prometheus-stack
+    app.kubernetes.io/instance: prometheus
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: kube-prometheus-stack
+    app.kubernetes.io/version: 17.0.3
+    chart: kube-prometheus-stack-17.0.3
+    heritage: Helm
+    release: prometheus
+  name: prometheus-kube-prometheus-noderule.rules
+  namespace: prometheus
+spec:
+  groups:
+  - name: noderule.rules
+    interval: 15s
+    rules:
+    - alert: NodeHighCpuLoadDisaster
+      annotations:
+        description: cpu usage is over 80%.
+        summary: cpu usage is over 80%.
+      expr: (instance:node_cpu_utilisation:rate5m{job='node-exporter'} * 100) > 80
+      for: 5m
+      labels:
+        severity: critical
+    - alert: NodeHighCpuLoadCritical
+      annotations:
+        description: cpu usage is over 70%.
+        summary: cpu usage is over 70%.
+      expr: (instance:node_cpu_utilisation:rate5m{job='node-exporter'} * 100) > 70
+      for: 10m
+      labels:
+        severity: error
+    - alert: NodeHighCpuLoadMajor
+      annotations:
+        description: cpu usage is over 60%.
+        summary: cpu usage is over 60%.
+      expr: (instance:node_cpu_utilisation:rate5m{job='node-exporter'} * 100) > 60
+      for: 20m
+      labels:
+        severity: warn
+    - alert: NodeHighCpuLoadMinor
+      annotations:
+        description: cpu usage is over 50%.
+        summary: cpu usage is over 50%.
+      expr: (instance:node_cpu_utilisation:rate5m{job='node-exporter'} * 100) > 50
+      for: 40m
+      labels:
+        severity: info
+    - alert: NodeHighMemoryDisaster
+      annotations:
+        description: memory usage is over 80%.
+        summary: memory usage is over 80%.
+      expr: (instance:node_memory_utilisation:ratio{job='node-exporter'} * 100) > 80
+      for: 5m
+      labels:
+        severity: critical
+    - alert: NodeHighMemoryCritical
+      annotations:
+        description: memory usage is over 70%.
+        summary: memory usage is over 70%.
+      expr: (instance:node_memory_utilisation:ratio{job='node-exporter'} * 100) > 70
+      for: 10m
+      labels:
+        severity: error
+    - alert: NodeHighMemoryMajor
+      annotations:
+        description: memory usage is over 60%.
+        summary: memory usage is over 60%.
+      expr: (instance:node_memory_utilisation:ratio{job='node-exporter'} * 100) > 60
+      for: 20m
+      labels:
+        severity: warn
+    - alert: NodeHighMemoryMinor
+      annotations:
+        description: memory usage is over 50%.
+        summary: memory usage is over 50%.
+      expr: (instance:node_memory_utilisation:ratio{job='node-exporter'} * 100) > 50
+      for: 40m
+      labels:
+        severity: info
+    - alert: NodeHighDiskDisaster
+      annotations:
+        description: disk usage is over 80%.
+        summary: disk usage is over 80%.
+      expr: ((1-(max without (mountpoint, fstype, device) (node_filesystem_avail_bytes{job='node-exporter', fstype!='', fstype!='fuse.lxcfs'})/max without (mountpoint, fstype, device) (node_filesystem_size_bytes{job='node-exporter', fstype!='', fstype!='fuse.lxcfs'}))) * 100) > 80
+      for: 40m
+      labels:
+        severity: critical
+    - alert: NodeHighDiskCritical
+      annotations:
+        description: disk usage is over 70%.
+        summary: disk usage is over 70%.
+      expr: ((1-(max without (mountpoint, fstype, device) (node_filesystem_avail_bytes{job='node-exporter', fstype!='', fstype!='fuse.lxcfs'})/max without (mountpoint, fstype, device) (node_filesystem_size_bytes{job='node-exporter', fstype!='', fstype!='fuse.lxcfs'}))) * 100) > 70
+      for: 40m
+      labels:
+        severity: error
+    - alert: NodeHighDiskMajor
+      annotations:
+        description: disk usage is over 60%.
+        summary: disk usage is over 60%.
+      expr: ((1-(max without (mountpoint, fstype, device) (node_filesystem_avail_bytes{job='node-exporter', fstype!='', fstype!='fuse.lxcfs'})/max without (mountpoint, fstype, device) (node_filesystem_size_bytes{job='node-exporter', fstype!='', fstype!='fuse.lxcfs'}))) * 100) > 60
+      for: 40m
+      labels:
+        severity: warn
+    - alert: NodeHighDiskMinor
+      annotations:
+        description: disk usage is over 50%.
+        summary: disk usage is over 50%.
+      expr: ((1-(max without (mountpoint, fstype, device) (node_filesystem_avail_bytes{job='node-exporter', fstype!='', fstype!='fuse.lxcfs'})/max without (mountpoint, fstype, device) (node_filesystem_size_bytes{job='node-exporter', fstype!='', fstype!='fuse.lxcfs'}))) * 100) > 50
+      for: 40m
+      labels:
+        severity: info
+    - alert: NodeHighNetworkRxDisaster
+      annotations:
+        description: network rx usage is over 80%.
+        summary: network rx usage is over 80%.
+      expr: (instance:node_network_receive_bytes_excluding_lo:rate5m{job='node-exporter'} / 1024 / 1024) > 80
+      for: 5m
+      labels:
+        severity: critical
+    - alert: NodeHighNetworkRxCritical
+      annotations:
+        description: network rx usage is over 70%.
+        summary: network rx usage is over 70%.
+      expr: (instance:node_network_receive_bytes_excluding_lo:rate5m{job='node-exporter'} / 1024 / 1024) > 70
+      for: 10m
+      labels:
+        severity: error
+    - alert: NodeHighNetworkRxMajor
+      annotations:
+        description: network rx usage is over 60%.
+        summary: network rx usage is over 60%.
+      expr: (instance:node_network_receive_bytes_excluding_lo:rate5m{job='node-exporter'} / 1024 / 1024) > 60
+      for: 20m
+      labels:
+        severity: warn
+    - alert: NodeHighNetworkRxMinor
+      annotations:
+        description: network rx usage is over 50%.
+        summary: network rx usage is over 50%.
+      expr: (instance:node_network_receive_bytes_excluding_lo:rate5m{job='node-exporter'} / 1024 / 1024) > 50
+      for: 40m
+      labels:
+        severity: info
