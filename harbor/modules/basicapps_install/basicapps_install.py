@@ -67,9 +67,12 @@ def basicapps_db_init(config_path: str, user_info: dict, k8s_nodes: dict):
 
     pod_list =  v1.list_namespaced_pod(namespace='viewapps')
 
-
     service = v1.read_namespaced_service(name="vsai-bridge-app-service", namespace="default")
     cluster_ip = service.spec.cluster_ip
+
+    #get context
+    context = config.list_kube_config_contexts()[1]
+    cluster_name = context['context']['cluster']
 
     for node_ip in k8s_nodes:
         if "master" == k8s_nodes[node_ip][1]:
@@ -91,7 +94,8 @@ def basicapps_db_init(config_path: str, user_info: dict, k8s_nodes: dict):
         cursor = conn.cursor()
 
         #cluster_info_query
-        cluster_info_query = f"insert into aiworkflow.t_vai_cluster_info (cluster_id, cluster_name, bridge_scheme, bridge_host, bridge_port,  config_path, region, provider, current_size, max_size,  min_size, master_nodes, v_cpu, memory, storage,  v_gpu, gpu, kube_version, os, status,  reg_id, reg_dt, mod_id, mod_dt, del_yn,  master_ip, prometheus_url, prometheus_id, prometheus_pw) VALUES('CIL01', 'svc', 'http', '{cluster_ip}', '8490',  '/app/resources/kube_config', 'bundang', 'libvirt', 3, 10,  3, 1, 2, 8, 256,  2, 2, '1.17.0', 'ubuntu1804', 'created',  'vsadmin1', now(), 'vsadmin1', now(), 'N',  '{master_ip}', 'http://223.62.140.9:30477/grafana/d/node_summary/node-exporter-nodes?orgId=1&refresh=30s&token=', NULL, NULL)"
+        cluster_info_query = f"insert into aiworkflow.t_vai_cluster_info (cluster_id, cluster_name, bridge_scheme, bridge_host, bridge_port,  config_path, region, provider, current_size, max_size,  min_size, master_nodes, v_cpu, memory, storage,  v_gpu, gpu, kube_version, os, status,  reg_id, reg_dt, mod_id, mod_dt, del_yn,  master_ip, prometheus_url, prometheus_id, prometheus_pw) VALUES('CIL01', '{cluster_name}', 'http', '{cluster_ip}', '8490',  '/app/resources/kube_config', 'bundang', 'libvirt', 3, 10,  3, 1, 2, 8, 256,  2, 2, '1.17.0', 'ubuntu1804', 'created',  'vsadmin1', now(), 'vsadmin1', now(), 'N',  '{master_ip}', 'http://223.62.140.9:30477/grafana/d/node_summary/node-exporter-nodes?orgId=1&refresh=30s&token=', NULL, NULL)"
+
 
         cursor.execute(cluster_info_query)
         conn.commit()
